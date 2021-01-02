@@ -1,38 +1,36 @@
 from mpmath import mp, mpf
 mp.dps = 30
-from random import random
 
-def poly_cheby(x):
-    poly_cheby.p2 = 4*x*x-2
-    poly_cheby.p_nm1 = x
-    poly_cheby.p_nm2 = x
+def atan_poly_cheb(x):
+    atan_poly_cheb.p2 = 4*x*x-2
+    atan_poly_cheb.p_nm1 = x
+    atan_poly_cheb.p_nm2 = x
     yield x
     while True:
-        p_np1 = poly_cheby.p2*poly_cheby.p_nm1 \
-            - poly_cheby.p_nm2
-        poly_cheby.p_nm2 = poly_cheby.p_nm1
-        poly_cheby.p_nm1 = p_np1
+        p_np1 = atan_poly_cheb.p2*atan_poly_cheb.p_nm1 \
+            - atan_poly_cheb.p_nm2
+        atan_poly_cheb.p_nm2 = atan_poly_cheb.p_nm1
+        atan_poly_cheb.p_nm1 = p_np1
         yield p_np1
 
 
-SQRT2_M1 = mp.sqrt(2) - mpf(1)
-
-
-def atan_coef():
-    atan_coef.k = mpf(0)
-    atan_coef.sqrt2_pow = mpf(-1)/SQRT2_M1
+def atan_cheby_coef():
+    SQRT2_M1 = mp.sqrt(2) - mpf(1)
+    SQRT2_M1_2 = SQRT2_M1*SQRT2_M1
+    atan_cheby_coef.k = mpf(0)
+    atan_cheby_coef.rho_factor = mpf(-2)/SQRT2_M1
 
     while True:
-        atan_coef.k += mpf(1)
-        atan_coef.sqrt2_pow *= - SQRT2_M1*SQRT2_M1
-        coef = 2/(2*atan_coef.k-1) * atan_coef.sqrt2_pow
+        atan_cheby_coef.k += mpf(1)
+        atan_cheby_coef.rho_factor *= - SQRT2_M1_2
+        coef = atan_cheby_coef.rho_factor/(2*atan_cheby_coef.k-1)
         yield coef
 
 
 def atan_approx(x):
     result = 0
-    cheby = poly_cheby(x)
-    coef = atan_coef()
+    cheby = atan_poly_cheb(x)
+    coef = atan_cheby_coef()
 
     for i in range(37):
         result += next(coef) * next(cheby)
@@ -46,14 +44,15 @@ def main():
     print("Pi Exact : ",mp.pi)
     print("Pi Approx Error: ", pi_approx-mp.pi)
     
+    from random import random
     x = mpf(random()*2 - 1)
     approx = atan_approx(x)
     exact = mp.atan(x)
     
-    print("*** atan of random number ****")
+    print("\n*** atan of random number ****")
     print("x: ", x)
     print("Approx atan: ", approx)
-    print("Exact atan: ", mp.atan(x))
+    print("Exact atan : ", mp.atan(x))
     print("Atan Approx Error: ", approx-exact)
 
 main()
